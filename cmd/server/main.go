@@ -4,19 +4,23 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/dhruv8808agja/movie-db-api/internal/auth"
+	"github.com/dhruv8808agja/movie-db-api/internal/logger"
+	"github.com/dhruv8808agja/movie-db-api/internal/monitor"
 	"github.com/dhruv8808agja/movie-db-api/internal/movies"
 	"github.com/dhruv8808agja/movie-db-api/internal/storage"
 )
 
 func main() {
-	// Initialize database (if needed)
-	storage.InitDB()
+	// Initialize logger
+	logger.InitLogger()
 
-	// Initialize Redis
+	// Initialize DB and Redis
+	storage.InitDB()
 	storage.InitRedis()
 
 	// Setup Gin router
-	r := gin.Default()
+	r := gin.New()
+	r.Use(logger.GinLogger(), gin.Recovery()) // logging + recovery
 
 	// Public routes
 	// Authentication
@@ -34,13 +38,16 @@ func main() {
 	secured.POST("/movies/bulk", movies.CreateMovies)
 
 	// Read
-	r.GET("/movies/:id", movies.GetMovieByID)
+	secured.GET("/movies/:id", movies.GetMovieByID)
 
 	// Update
 	secured.PUT("/movies/:id", movies.UpdateMovie)
 	// Delete
 	secured.DELETE("/movies/:id", movies.DeleteMovie)
 	secured.DELETE("/movies", movies.DeleteMovies)
+
+	// Prometheus metrics
+	monitor.RegisterMetrics(r)
 
 	r.Run(":8080")
 }
