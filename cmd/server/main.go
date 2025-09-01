@@ -19,7 +19,7 @@ func main() {
 	r.POST("/movies", movies.CreateMovie)
 	r.POST("/movies/bulk", movies.CreateMovies)
 	// Read
-	r.GET("/movies", movies.ListMovies)
+	r.GET("/movies", movies.ListMoviesWithFilter)
 	r.GET("/movies/:id", movies.GetMovie)
 	// Update
 	r.PUT("/movies/:id", movies.UpdateMovie)
