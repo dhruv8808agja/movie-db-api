@@ -12,6 +12,9 @@ func main() {
 	// Initialize database (if needed)
 	storage.InitDB()
 
+	// Initialize Redis
+	storage.InitRedis()
+
 	// Setup Gin router
 	r := gin.Default()
 
@@ -31,7 +34,7 @@ func main() {
 	secured.POST("/movies/bulk", movies.CreateMovies)
 
 	// Read
-	r.GET("/movies/:id", movies.GetMovie)
+	r.GET("/movies/:id", movies.GetMovieByID)
 
 	// Update
 	secured.PUT("/movies/:id", movies.UpdateMovie)
