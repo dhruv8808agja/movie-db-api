@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -9,7 +11,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte("your-secret-key") // replace with env var in prod
+var jwtSecret = getJWTSecret()
+
+func getJWTSecret() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		log.Fatal("JWT_SECRET environment variable is not set")
+	}
+	return []byte(secret)
+}
 
 // GenerateToken creates a JWT for a given username
 func GenerateToken(username string) (string, error) {

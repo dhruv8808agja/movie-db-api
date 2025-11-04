@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -12,10 +14,29 @@ var RedisClient *redis.Client
 var Ctx = context.Background()
 
 func InitRedis() {
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == "" {
+		addr = "127.0.0.1:6379" // default value
+	}
+
+	password := os.Getenv("REDIS_PASSWORD")
+	// Empty password is acceptable, so no default needed
+
+	dbStr := os.Getenv("REDIS_DB")
+	db := 0 // default value
+	if dbStr != "" {
+		var err error
+		db, err = strconv.Atoi(dbStr)
+		if err != nil {
+			log.Printf("Invalid REDIS_DB value '%s', using default 0", dbStr)
+			db = 0
+		}
+	}
+
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: "", // no password by default
-		DB:       0,
+		Addr:     addr,
+		Password: password,
+		DB:       db,
 	})
 
 	_, err := RedisClient.Ping(Ctx).Result()
