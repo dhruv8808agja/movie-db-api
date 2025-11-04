@@ -5,6 +5,7 @@ import (
 
 	"github.com/dhruv8808agja/movie-db-api/internal/auth"
 	"github.com/dhruv8808agja/movie-db-api/internal/logger"
+	"github.com/dhruv8808agja/movie-db-api/internal/middleware"
 	"github.com/dhruv8808agja/movie-db-api/internal/monitor"
 	"github.com/dhruv8808agja/movie-db-api/internal/movies"
 	"github.com/dhruv8808agja/movie-db-api/internal/storage"
@@ -21,6 +22,10 @@ func main() {
 	// Setup Gin router
 	r := gin.New()
 	r.Use(logger.GinLogger(), gin.Recovery()) // logging + recovery
+
+	// Setup rate limiting
+	rateLimitConfig := middleware.GetRateLimiterConfig()
+	r.Use(middleware.RateLimiter(rateLimitConfig))
 
 	// Public routes
 	// Authentication
