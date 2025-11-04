@@ -1,6 +1,7 @@
 package movies
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/dhruv8808agja/movie-db-api/internal/logger"
@@ -16,6 +17,13 @@ func CreateMovie(c *gin.Context) {
 
 	if err := c.BindJSON(&newMovie); err != nil {
 		logger.Log.Error("failed to bind movie JSON", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate movie data
+	if err := ValidateMovie(&newMovie); err != nil {
+		logger.Log.Warn("movie validation failed", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -38,6 +46,19 @@ func CreateMovies(c *gin.Context) {
 		logger.Log.Error("failed to bind movies JSON", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Validate each movie
+	for i, movie := range newMovies {
+		if err := ValidateMovie(&movie); err != nil {
+			logger.Log.Warn("movie validation failed in bulk create",
+				zap.Int("index", i),
+				zap.Error(err))
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "validation failed for movie at index " + fmt.Sprint(i) + ": " + err.Error(),
+			})
+			return
+		}
 	}
 
 	// Save to DB

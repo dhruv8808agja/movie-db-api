@@ -25,6 +25,12 @@ func UpdateMovie(c *gin.Context) {
 		return
 	}
 
+	// Validate movie data
+	if err := ValidateMovie(&updatedMovie); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	var movie models.Movie
 	if err := storage.DB.First(&movie, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Movie not found"})
