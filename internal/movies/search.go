@@ -9,7 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ListMoviesWithFilter supports pagination + search/filter
+// ListMoviesWithFilter retrieves a list of movies with optional filters and pagination
+// @Summary      List movies with filters
+// @Description  Get a paginated list of movies with optional search filters. Public endpoint (no authentication required).
+// @Tags         movies
+// @Accept       json
+// @Produce      json
+// @Param        page      query     int     false  "Page number"          default(1)      minimum(1)
+// @Param        limit     query     int     false  "Items per page"       default(10)     minimum(1)      maximum(100)
+// @Param        title     query     string  false  "Filter by title (case-insensitive partial match)"
+// @Param        director  query     string  false  "Filter by director (case-insensitive partial match)"
+// @Param        genre     query     string  false  "Filter by genre"
+// @Success      200       {object}  paginatedMoviesResponse  "List of movies with pagination info"
+// @Failure      500       {object}  map[string]string        "Internal server error"
+// @Router       /movies [get]
 func ListMoviesWithFilter(c *gin.Context) {
 	page, pageSize := GetPagination(c)
 

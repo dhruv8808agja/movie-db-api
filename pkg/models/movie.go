@@ -26,11 +26,11 @@ func (g *Genres) Scan(value interface{}) error {
 
 // Movie is the main entity
 type Movie struct {
-	ID          uint      `gorm:"primaryKey" json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Director    string    `json:"director"`
-	ReleaseDate time.Time `json:"release_date"`
-	Genres      Genres    `json:"genres"` // stored as JSON
-	Rating      float32   `json:"rating"`
+	ID          uint      `gorm:"primaryKey" json:"id" example:"1"`
+	Title       string    `json:"title" example:"The Matrix"`
+	Description string    `json:"description" example:"A computer hacker learns from mysterious rebels about the true nature of his reality"`
+	Director    string    `json:"director" example:"The Wachowskis"`
+	ReleaseDate time.Time `json:"release_date" example:"1999-03-31T00:00:00Z"`
+	Genres      Genres    `json:"genres" swaggertype:"array,string" example:"Action,Sci-Fi"` // stored as JSON
+	Rating      float32   `json:"rating" example:"8.7" minimum:"0" maximum:"10"`
 }

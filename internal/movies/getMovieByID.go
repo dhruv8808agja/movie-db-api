@@ -11,6 +11,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetMovieByID retrieves a movie by its ID
+// @Summary      Get movie by ID
+// @Description  Get a single movie by its ID. Uses Redis caching. Requires authentication.
+// @Tags         movies
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Movie ID"
+// @Success      200  {object}  models.Movie  "Movie details"
+// @Failure      400  {object}  map[string]string  "Invalid ID"
+// @Failure      404  {object}  map[string]string  "Movie not found"
+// @Security     BearerAuth
+// @Router       /movies/{id} [get]
 func GetMovieByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

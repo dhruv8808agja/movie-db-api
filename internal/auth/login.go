@@ -6,6 +6,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// LoginRequest represents login credentials
+type LoginRequest struct {
+	Username string `json:"username" example:"admin"`
+	Password string `json:"password" example:"password"`
+}
+
+// LoginResponse represents the JWT token response
+type LoginResponse struct {
+	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+}
+
+// ErrorResponse represents an error response
+type ErrorResponse struct {
+	Error string `json:"error" example:"invalid credentials"`
+}
+
+// Login authenticates a user and returns a JWT token
+// @Summary      User login
+// @Description  Authenticate with username and password to receive a JWT token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        credentials  body      LoginRequest   true  "Login credentials"
+// @Success      200          {object}  LoginResponse  "Successfully authenticated"
+// @Failure      400          {object}  ErrorResponse  "Invalid request body"
+// @Failure      401          {object}  ErrorResponse  "Invalid credentials"
+// @Failure      500          {object}  ErrorResponse  "Failed to generate token"
+// @Router       /login [post]
 func Login(c *gin.Context) {
 	var creds struct {
 		Username string `json:"username"`

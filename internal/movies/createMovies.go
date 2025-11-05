@@ -12,6 +12,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateMovie creates a new movie in the database
+// @Summary      Create a new movie
+// @Description  Create a new movie with the provided details. Requires authentication.
+// @Tags         movies
+// @Accept       json
+// @Produce      json
+// @Param        movie  body      models.Movie  true  "Movie object to create"
+// @Success      201    {object}  models.Movie  "Successfully created movie"
+// @Failure      400    {object}  map[string]string  "Invalid request or validation error"
+// @Failure      500    {object}  map[string]string  "Internal server error"
+// @Security     BearerAuth
+// @Router       /movies [post]
 func CreateMovie(c *gin.Context) {
 	var newMovie models.Movie
 
@@ -39,6 +51,18 @@ func CreateMovie(c *gin.Context) {
 	c.JSON(http.StatusCreated, newMovie)
 }
 
+// CreateMovies creates multiple movies in bulk
+// @Summary      Create multiple movies
+// @Description  Create multiple movies in a single request. Requires authentication.
+// @Tags         movies
+// @Accept       json
+// @Produce      json
+// @Param        movies  body      []models.Movie  true  "Array of movie objects to create"
+// @Success      201     {object}  []models.Movie  "Successfully created movies"
+// @Failure      400     {object}  map[string]string  "Invalid request or validation error"
+// @Failure      500     {object}  map[string]string  "Internal server error"
+// @Security     BearerAuth
+// @Router       /movies/bulk [post]
 func CreateMovies(c *gin.Context) {
 	var newMovies []models.Movie
 

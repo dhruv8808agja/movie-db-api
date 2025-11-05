@@ -10,6 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// DeleteMovie deletes a movie by ID
+// @Summary      Delete movie
+// @Description  Delete a movie by its ID. Requires authentication.
+// @Tags         movies
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Movie ID"
+// @Success      204  "Successfully deleted"
+// @Failure      400  {object}  map[string]string  "Invalid ID"
+// @Failure      404  {object}  map[string]string  "Movie not found"
+// @Failure      500  {object}  map[string]string  "Internal server error"
+// @Security     BearerAuth
+// @Router       /movies/{id} [delete]
 func DeleteMovie(c *gin.Context) {
 	idParam := c.Param("id")
 	var id uint
@@ -33,6 +46,23 @@ func DeleteMovie(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// DeleteMoviesRequest represents the request body for bulk delete
+type DeleteMoviesRequest struct {
+	IDs []uint `json:"ids" example:"1,2,3"`
+}
+
+// DeleteMovies deletes multiple movies by their IDs
+// @Summary      Delete multiple movies
+// @Description  Delete multiple movies in a single request. Requires authentication.
+// @Tags         movies
+// @Accept       json
+// @Produce      json
+// @Param        ids  body      DeleteMoviesRequest  true  "Array of movie IDs to delete"
+// @Success      204  "Successfully deleted"
+// @Failure      400  {object}  map[string]string  "Invalid request"
+// @Failure      500  {object}  map[string]string  "Internal server error"
+// @Security     BearerAuth
+// @Router       /movies [delete]
 func DeleteMovies(c *gin.Context) {
 	var ids struct {
 		IDs []uint `json:"ids"`

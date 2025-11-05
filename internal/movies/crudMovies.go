@@ -10,6 +10,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// UpdateMovie updates an existing movie
+// @Summary      Update movie
+// @Description  Update an existing movie by ID. Requires authentication.
+// @Tags         movies
+// @Accept       json
+// @Produce      json
+// @Param        id     path      int           true  "Movie ID"
+// @Param        movie  body      models.Movie  true  "Updated movie object"
+// @Success      200    {object}  models.Movie  "Successfully updated movie"
+// @Failure      400    {object}  map[string]string  "Invalid ID or request"
+// @Failure      404    {object}  map[string]string  "Movie not found"
+// @Failure      500    {object}  map[string]string  "Internal server error"
+// @Security     BearerAuth
+// @Router       /movies/{id} [put]
 func UpdateMovie(c *gin.Context) {
 	idParam := c.Param("id")
 	var id uint
