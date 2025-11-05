@@ -44,12 +44,19 @@ func GetRateLimiterConfig() RateLimiterConfig {
 // Uses Redis with sliding window algorithm
 func RateLimiter(config RateLimiterConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// If Redis is not available, skip rate limiting
+		if storage.RedisClient == nil {
+			c.Next()
+			return
+		}
+
 		// Get client IP as the rate limit key
 		clientIP := c.ClientIP()
 		key := "rate_limit:" + clientIP
 
-		// Current timestamp
-		now := time.Now().Unix()
+		// Current timestamp (use nanoseconds for uniqueness)
+		nowNano := time.Now().UnixNano()
+		now := nowNano / 1e9 // Convert to seconds for scoring
 		windowStart := now - int64(config.WindowDuration.Seconds())
 
 		// Use Redis pipeline for atomic operations
@@ -58,14 +65,15 @@ func RateLimiter(config RateLimiterConfig) gin.HandlerFunc {
 		// Remove old entries outside the current window
 		pipe.ZRemRangeByScore(storage.Ctx, key, "0", strconv.FormatInt(windowStart, 10))
 
-		// Count requests in current window
-		countCmd := pipe.ZCount(storage.Ctx, key, strconv.FormatInt(windowStart, 10), "+inf")
-
 		// Add current request with current timestamp as score
+		// Use nanoseconds as member for uniqueness
 		pipe.ZAdd(storage.Ctx, key, redis.Z{
 			Score:  float64(now),
-			Member: strconv.FormatInt(now, 10),
+			Member: strconv.FormatInt(nowNano, 10),
 		})
+
+		// Count requests in current window (after adding current request)
+		countCmd := pipe.ZCount(storage.Ctx, key, strconv.FormatInt(windowStart, 10), "+inf")
 
 		// Set expiry on the key (cleanup)
 		pipe.Expire(storage.Ctx, key, config.WindowDuration)
@@ -86,7 +94,7 @@ func RateLimiter(config RateLimiterConfig) gin.HandlerFunc {
 			return
 		}
 
-		// Check if rate limit exceeded
+		// Check if rate limit exceeded (count includes current request)
 		if count > int64(config.RequestsPerWindow) {
 			c.Header("X-RateLimit-Limit", strconv.Itoa(config.RequestsPerWindow))
 			c.Header("X-RateLimit-Remaining", "0")

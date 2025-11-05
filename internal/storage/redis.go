@@ -49,10 +49,16 @@ func InitRedis() {
 
 // Set with TTL
 func SetCache(key string, value interface{}, ttl time.Duration) error {
+	if RedisClient == nil {
+		return nil // Gracefully skip if Redis not available
+	}
 	return RedisClient.Set(Ctx, key, value, ttl).Err()
 }
 
 // Get
 func GetCache(key string) (string, error) {
+	if RedisClient == nil {
+		return "", redis.Nil // Return cache miss if Redis not available
+	}
 	return RedisClient.Get(Ctx, key).Result()
 }
