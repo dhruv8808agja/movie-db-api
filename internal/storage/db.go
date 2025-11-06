@@ -13,6 +13,8 @@ var DB *gorm.DB
 var Movie = models.Movie{}
 var Video = models.Video{}
 var UploadSession = models.UploadSession{}
+var TranscodedVideo = models.TranscodedVideo{}
+var TranscodingJob = models.TranscodingJob{}
 
 // InitDB initializes the database connection and performs auto-migration.
 func InitDB() {
@@ -23,7 +25,7 @@ func InitDB() {
 	}
 
 	// Auto-migrate schema
-	err = DB.AutoMigrate(&Movie, &Video, &UploadSession)
+	err = DB.AutoMigrate(&Movie, &Video, &UploadSession, &TranscodedVideo, &TranscodingJob)
 	if err != nil {
 		log.Fatal("failed to migrate database: ", err)
 	}

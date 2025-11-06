@@ -61,3 +61,34 @@ type VideoMetadata struct {
 	Bitrate  int64   `json:"bitrate"`
 	FPS      float64 `json:"fps"`
 }
+
+// TranscodedVideo represents a transcoded version of a video
+type TranscodedVideo struct {
+	ID           uint      `gorm:"primaryKey" json:"id"`
+	VideoID      uint      `json:"video_id"`                              // Foreign key to videos table
+	Quality      string    `json:"quality" example:"720p"`                // 1080p, 720p, 480p, 360p
+	Width        int       `json:"width" example:"1280"`
+	Height       int       `json:"height" example:"720"`
+	Codec        string    `json:"codec" example:"h264"`
+	Bitrate      int64     `json:"bitrate" example:"2800000"`
+	FileSize     int64     `json:"file_size" example:"524288000"`
+	StoragePath  string    `json:"storage_path" example:"videos/video-1/transcoded/720p/video.mp4"`
+	Status       string    `json:"status" example:"completed"`            // pending, processing, completed, failed
+	ErrorMessage string    `json:"error_message,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
+	CompletedAt  *time.Time `json:"completed_at,omitempty"`
+}
+
+// TranscodingJob represents a transcoding job with progress tracking
+type TranscodingJob struct {
+	ID              uint      `gorm:"primaryKey" json:"id"`
+	VideoID         uint      `json:"video_id"`
+	TargetQualities string    `json:"target_qualities" example:"1080p,720p,480p,360p"` // Comma-separated list
+	Status          string    `json:"status" example:"processing"`                     // pending, processing, completed, failed
+	Progress        float64   `json:"progress" example:"45.5"`                         // 0-100
+	CurrentQuality  string    `json:"current_quality,omitempty" example:"720p"`
+	ErrorMessage    string    `json:"error_message,omitempty"`
+	CreatedAt       time.Time `json:"created_at"`
+	StartedAt       *time.Time `json:"started_at,omitempty"`
+	CompletedAt     *time.Time `json:"completed_at,omitempty"`
+}

@@ -90,6 +90,11 @@ func main() {
 	secured.GET("/videos/upload/status/:sessionId", videos.GetUploadStatus)
 	secured.DELETE("/videos/upload/cancel/:sessionId", videos.CancelUpload)
 
+	// Video transcoding routes
+	secured.POST("/videos/transcode", videos.StartTranscoding)
+	secured.GET("/videos/transcode/job/:jobId", videos.GetTranscodingJobStatus)
+	secured.GET("/videos/:videoId/transcoded", videos.ListTranscodedVideos)
+
 	// Prometheus metrics
 	monitor.RegisterMetrics(r)
 
