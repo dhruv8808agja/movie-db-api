@@ -108,6 +108,45 @@ func CompleteUpload(c *gin.Context) {
 		metadata = &VideoMetadata{} // Use empty metadata
 	}
 
+	// Generate thumbnail
+	thumbnailPath := ""
+	thumbnailStoragePath := ""
+	if metadata.Duration > 0 { // Only generate if we have duration info
+		// Create local thumbnail path
+		thumbnailDir := filepath.Join(os.Getenv("UPLOAD_TEMP_DIR"), "thumbnails")
+		thumbnailFilename := fmt.Sprintf("%s.jpg", req.SessionID)
+		thumbnailLocalPath := filepath.Join(thumbnailDir, thumbnailFilename)
+
+		// Generate thumbnail
+		if err := GenerateThumbnailWithDefault(mergedFilePath, thumbnailLocalPath); err != nil {
+			logger.Log.Warn("failed to generate thumbnail, continuing without it",
+				zap.Error(err),
+				zap.String("video_path", mergedFilePath))
+		} else {
+			// Upload thumbnail to MinIO
+			thumbnailStoragePath = generateThumbnailStoragePath(&session, thumbnailFilename)
+			contentType := "image/jpeg"
+
+			if err := storage.UploadFile(ctx, thumbnailStoragePath, thumbnailLocalPath, contentType); err != nil {
+				logger.Log.Warn("failed to upload thumbnail to storage",
+					zap.Error(err),
+					zap.String("path", thumbnailStoragePath))
+			} else {
+				// Generate public URL for thumbnail
+				thumbnailURL, err := storage.GetPresignedURL(ctx, thumbnailStoragePath, 604800) // 7 days
+				if err == nil {
+					thumbnailPath = thumbnailURL
+				}
+				logger.Log.Info("thumbnail uploaded",
+					zap.String("storage_path", thumbnailStoragePath),
+					zap.String("url", thumbnailPath))
+			}
+
+			// Clean up local thumbnail file
+			os.Remove(thumbnailLocalPath)
+		}
+	}
+
 	// Create video record with metadata
 	video := models.Video{
 		MovieID:      session.MovieID,
@@ -123,6 +162,7 @@ func CompleteUpload(c *gin.Context) {
 		Bitrate:      metadata.Bitrate,
 		FPS:          metadata.FPS,
 		StoragePath:  storagePath,
+		ThumbnailURL: thumbnailPath,
 		UploadStatus: "completed",
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
@@ -193,6 +233,15 @@ func generateStoragePath(session *models.UploadSession) string {
 			*session.MovieID, session.ID, session.Filename)
 	}
 	return fmt.Sprintf("videos/standalone/%s-%s", session.ID, session.Filename)
+}
+
+// generateThumbnailStoragePath generates the MinIO storage path for thumbnails
+func generateThumbnailStoragePath(session *models.UploadSession, filename string) string {
+	if session.MovieID != nil {
+		return fmt.Sprintf("videos/movie-%d/thumbnails/%s",
+			*session.MovieID, filename)
+	}
+	return fmt.Sprintf("videos/standalone/thumbnails/%s", filename)
 }
 
 // cleanupSessionFiles removes temporary files for a session
