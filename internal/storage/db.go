@@ -11,6 +11,8 @@ import (
 
 var DB *gorm.DB
 var Movie = models.Movie{}
+var Video = models.Video{}
+var UploadSession = models.UploadSession{}
 
 // InitDB initializes the database connection and performs auto-migration.
 func InitDB() {
@@ -21,7 +23,7 @@ func InitDB() {
 	}
 
 	// Auto-migrate schema
-	err = DB.AutoMigrate(&Movie)
+	err = DB.AutoMigrate(&Movie, &Video, &UploadSession)
 	if err != nil {
 		log.Fatal("failed to migrate database: ", err)
 	}

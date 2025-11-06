@@ -12,6 +12,7 @@ import (
 	"github.com/dhruv8808agja/movie-db-api/internal/monitor"
 	"github.com/dhruv8808agja/movie-db-api/internal/movies"
 	"github.com/dhruv8808agja/movie-db-api/internal/storage"
+	"github.com/dhruv8808agja/movie-db-api/internal/videos"
 )
 
 // @title           Movie Database API
@@ -42,9 +43,10 @@ func main() {
 	// Initialize logger
 	logger.InitLogger()
 
-	// Initialize DB and Redis
+	// Initialize DB, Redis, and MinIO
 	storage.InitDB()
 	storage.InitRedis()
+	storage.InitMinIO()
 
 	// Setup Gin router
 	r := gin.New()
@@ -80,6 +82,13 @@ func main() {
 	// Delete
 	secured.DELETE("/movies/:id", movies.DeleteMovie)
 	secured.DELETE("/movies", movies.DeleteMovies)
+
+	// Video upload routes
+	secured.POST("/videos/upload/initiate", videos.InitiateUpload)
+	secured.POST("/videos/upload/chunk", videos.UploadChunk)
+	secured.POST("/videos/upload/complete", videos.CompleteUpload)
+	secured.GET("/videos/upload/status/:sessionId", videos.GetUploadStatus)
+	secured.DELETE("/videos/upload/cancel/:sessionId", videos.CancelUpload)
 
 	// Prometheus metrics
 	monitor.RegisterMetrics(r)

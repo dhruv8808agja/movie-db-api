@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: movie-db-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # MinIO for video storage (S3-compatible)
+  minio:
+    image: minio/minio:latest
+    container_name: movie-db-minio
+    ports:
+      - "9000:9000"      # API port
+      - "9001:9001"      # Console UI port
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MinIO Client - to create bucket on startup
+  minio-setup:
+    image: minio/mc:latest
+    container_name: movie-db-minio-setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin123;
+      /usr/bin/mc mb myminio/videos --ignore-existing;
+      /usr/bin/mc anonymous set download myminio/videos;
+      echo 'MinIO setup complete! Access console at http://localhost:9001';
+      "
+
+volumes:
+  redis-data:
+    driver: local
+  minio-data:
+    driver: local

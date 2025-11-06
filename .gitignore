@@ -1,2 +1,9 @@
 movies.db
+movie-db.db
 .env
+
+# Compiled binaries
+movie-db-api
+
+# Temporary upload files
+tmp/
