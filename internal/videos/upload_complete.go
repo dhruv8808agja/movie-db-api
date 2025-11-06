@@ -99,13 +99,29 @@ func CompleteUpload(c *gin.Context) {
 
 	logger.Log.Info("video uploaded to storage", zap.String("path", storagePath))
 
-	// Create video record
+	// Extract metadata from merged file
+	metadata, err := ExtractMetadata(mergedFilePath)
+	if err != nil {
+		logger.Log.Warn("failed to extract metadata, continuing without it",
+			zap.Error(err),
+			zap.String("path", mergedFilePath))
+		metadata = &VideoMetadata{} // Use empty metadata
+	}
+
+	// Create video record with metadata
 	video := models.Video{
 		MovieID:      session.MovieID,
 		Title:        session.Filename,
 		Filename:     session.Filename,
 		OriginalName: session.Filename,
 		FileSize:     session.FileSize,
+		Duration:     metadata.Duration,
+		Width:        metadata.Width,
+		Height:       metadata.Height,
+		Codec:        metadata.Codec,
+		Format:       metadata.Format,
+		Bitrate:      metadata.Bitrate,
+		FPS:          metadata.FPS,
 		StoragePath:  storagePath,
 		UploadStatus: "completed",
 		CreatedAt:    time.Now(),
