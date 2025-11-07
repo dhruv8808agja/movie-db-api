@@ -343,6 +343,216 @@ func TestDeleteMovie_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
+func TestListMovies_Success(t *testing.T) {
+	testutil.SetTestEnv()
+	defer testutil.ClearTestEnv()
+	storage.DB = testutil.SetupTestDB()
+
+	// Create test movies
+	movies := testutil.CreateTestMovies(5)
+	for i := range movies {
+		storage.DB.Create(&movies[i])
+	}
+
+	router := setupRouter()
+	router.GET("/movies", ListMovies)
+
+	req := httptest.NewRequest("GET", "/movies", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response paginatedMoviesResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, response.Data)
+	assert.Equal(t, int64(5), response.Pagination.Total)
+	assert.Equal(t, 1, response.Pagination.Page)
+	assert.Equal(t, 10, response.Pagination.PageSize)
+	assert.True(t, response.Pagination.TotalPages > 0)
+}
+
+func TestListMovies_WithPagination(t *testing.T) {
+	testutil.SetTestEnv()
+	defer testutil.ClearTestEnv()
+	storage.DB = testutil.SetupTestDB()
+
+	// Create 15 test movies
+	movies := testutil.CreateTestMovies(15)
+	for i := range movies {
+		storage.DB.Create(&movies[i])
+	}
+
+	router := setupRouter()
+	router.GET("/movies", ListMovies)
+
+	// Test page 1 with page_size 5
+	req := httptest.NewRequest("GET", "/movies?page=1&page_size=5", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response paginatedMoviesResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Len(t, response.Data, 5)
+	assert.Equal(t, int64(15), response.Pagination.Total)
+	assert.Equal(t, 1, response.Pagination.Page)
+	assert.Equal(t, 5, response.Pagination.PageSize)
+	assert.Equal(t, 3, response.Pagination.TotalPages)
+	assert.True(t, response.Pagination.HasNext)
+	assert.False(t, response.Pagination.HasPrev)
+}
+
+func TestListMovies_Page2(t *testing.T) {
+	testutil.SetTestEnv()
+	defer testutil.ClearTestEnv()
+	storage.DB = testutil.SetupTestDB()
+
+	// Create 15 test movies
+	movies := testutil.CreateTestMovies(15)
+	for i := range movies {
+		storage.DB.Create(&movies[i])
+	}
+
+	router := setupRouter()
+	router.GET("/movies", ListMovies)
+
+	// Test page 2 with page_size 5
+	req := httptest.NewRequest("GET", "/movies?page=2&page_size=5", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response paginatedMoviesResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Len(t, response.Data, 5)
+	assert.Equal(t, 2, response.Pagination.Page)
+	assert.True(t, response.Pagination.HasNext)
+	assert.True(t, response.Pagination.HasPrev)
+}
+
+func TestListMovies_LastPage(t *testing.T) {
+	testutil.SetTestEnv()
+	defer testutil.ClearTestEnv()
+	storage.DB = testutil.SetupTestDB()
+
+	// Create 15 test movies
+	movies := testutil.CreateTestMovies(15)
+	for i := range movies {
+		storage.DB.Create(&movies[i])
+	}
+
+	router := setupRouter()
+	router.GET("/movies", ListMovies)
+
+	// Test last page (page 3) with page_size 5
+	req := httptest.NewRequest("GET", "/movies?page=3&page_size=5", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response paginatedMoviesResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Len(t, response.Data, 5)
+	assert.Equal(t, 3, response.Pagination.Page)
+	assert.False(t, response.Pagination.HasNext)
+	assert.True(t, response.Pagination.HasPrev)
+}
+
+func TestListMovies_EmptyDatabase(t *testing.T) {
+	testutil.SetTestEnv()
+	defer testutil.ClearTestEnv()
+	storage.DB = testutil.SetupTestDB()
+
+	router := setupRouter()
+	router.GET("/movies", ListMovies)
+
+	req := httptest.NewRequest("GET", "/movies", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response paginatedMoviesResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Empty(t, response.Data)
+	assert.Equal(t, int64(0), response.Pagination.Total)
+	assert.Equal(t, 0, response.Pagination.TotalPages)
+	assert.False(t, response.Pagination.HasNext)
+	assert.False(t, response.Pagination.HasPrev)
+}
+
+func TestListMovies_InvalidPaginationParams(t *testing.T) {
+	testutil.SetTestEnv()
+	defer testutil.ClearTestEnv()
+	storage.DB = testutil.SetupTestDB()
+
+	// Create test movies
+	movies := testutil.CreateTestMovies(5)
+	for i := range movies {
+		storage.DB.Create(&movies[i])
+	}
+
+	router := setupRouter()
+	router.GET("/movies", ListMovies)
+
+	// Test with invalid pagination params (should use defaults)
+	req := httptest.NewRequest("GET", "/movies?page=invalid&page_size=abc", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response paginatedMoviesResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, response.Data)
+}
+
+func TestListMovies_LargePageSize(t *testing.T) {
+	testutil.SetTestEnv()
+	defer testutil.ClearTestEnv()
+	storage.DB = testutil.SetupTestDB()
+
+	// Create 5 test movies
+	movies := testutil.CreateTestMovies(5)
+	for i := range movies {
+		storage.DB.Create(&movies[i])
+	}
+
+	router := setupRouter()
+	router.GET("/movies", ListMovies)
+
+	// Test with large page_size (should return all movies)
+	req := httptest.NewRequest("GET", "/movies?page=1&page_size=100", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response paginatedMoviesResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Len(t, response.Data, 5)
+	assert.Equal(t, 100, response.Pagination.PageSize)
+	assert.False(t, response.Pagination.HasNext)
+}
+
 func TestListMoviesWithFilter_Success(t *testing.T) {
 	testutil.SetTestEnv()
 	defer testutil.ClearTestEnv()

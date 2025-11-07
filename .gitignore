@@ -16,6 +16,7 @@ tmp/
 # Test coverage
 coverage.out
 coverage.html
+*_cov.out
 
 # Backups
 *.sql

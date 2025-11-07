@@ -10,6 +10,7 @@ import (
 	"github.com/dhruv8808agja/movie-db-api/internal/storage"
 	"github.com/dhruv8808agja/movie-db-api/pkg/models"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -22,7 +23,7 @@ func SetupTestDB() *gorm.DB {
 	}
 
 	// Auto-migrate the schema
-	if err := db.AutoMigrate(&models.Movie{}); err != nil {
+	if err := db.AutoMigrate(&models.Movie{}, &models.User{}, &models.Video{}, &models.UploadSession{}, &models.TranscodedVideo{}, &models.TranscodingJob{}); err != nil {
 		log.Fatal("failed to migrate test database:", err)
 	}
 
@@ -107,4 +108,36 @@ func CreateTestMovies(count int) []models.Movie {
 		}
 	}
 	return movies
+}
+
+// CreateTestUser creates a test user with a hashed password
+// Note: The password is hashed using bcrypt
+func CreateTestUser(username, password string, role models.UserRole, isActive bool) *models.User {
+	// Hash the password using bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal("failed to hash password:", err)
+	}
+
+	return &models.User{
+		Username: username,
+		Email:    username + "@test.com",
+		Password: string(hashedPassword),
+		Role:     role,
+		IsActive: isActive,
+	}
+}
+
+// SeedTestUsers seeds the database with default test users
+func SeedTestUsers(db *gorm.DB) {
+	users := []*models.User{
+		CreateTestUser("admin", "password", models.RoleAdmin, true),
+		CreateTestUser("user", "password", models.RoleUser, true),
+		CreateTestUser("moderator", "password", models.RoleModerator, true),
+		CreateTestUser("inactive", "password", models.RoleUser, false),
+	}
+
+	for _, user := range users {
+		db.Create(user)
+	}
 }

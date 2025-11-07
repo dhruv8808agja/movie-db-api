@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/dhruv8808agja/movie-db-api/internal/storage"
 	"github.com/dhruv8808agja/movie-db-api/internal/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,10 @@ import (
 func TestLogin_Success(t *testing.T) {
 	testutil.SetTestEnv()
 	defer testutil.ClearTestEnv()
+
+	// Initialize test database and seed users
+	testutil.InitTestStorage()
+	testutil.SeedTestUsers(storage.DB)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
@@ -34,16 +39,20 @@ func TestLogin_Success(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var response map[string]string
+	var response LoginResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	assert.Contains(t, response, "token")
-	assert.NotEmpty(t, response["token"])
+	assert.NotEmpty(t, response.Token)
+	assert.Equal(t, "admin", response.User.Username)
 }
 
 func TestLogin_InvalidCredentials(t *testing.T) {
 	testutil.SetTestEnv()
 	defer testutil.ClearTestEnv()
+
+	// Initialize test database and seed users
+	testutil.InitTestStorage()
+	testutil.SeedTestUsers(storage.DB)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
@@ -85,6 +94,9 @@ func TestLogin_InvalidJSON(t *testing.T) {
 	testutil.SetTestEnv()
 	defer testutil.ClearTestEnv()
 
+	// Initialize test database
+	testutil.InitTestStorage()
+
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.POST("/login", Login)
@@ -101,6 +113,10 @@ func TestLogin_InvalidJSON(t *testing.T) {
 func TestJWTMiddleware_Integration(t *testing.T) {
 	testutil.SetTestEnv()
 	defer testutil.ClearTestEnv()
+
+	// Initialize test database and seed users
+	testutil.InitTestStorage()
+	testutil.SeedTestUsers(storage.DB)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
@@ -152,6 +168,9 @@ func TestJWTMiddleware_Integration_Unauthorized(t *testing.T) {
 	testutil.SetTestEnv()
 	defer testutil.ClearTestEnv()
 
+	// Initialize test database
+	testutil.InitTestStorage()
+
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 
@@ -173,6 +192,10 @@ func TestJWTMiddleware_Integration_Unauthorized(t *testing.T) {
 func TestAuthFlow_EndToEnd(t *testing.T) {
 	testutil.SetTestEnv()
 	defer testutil.ClearTestEnv()
+
+	// Initialize test database and seed users
+	testutil.InitTestStorage()
+	testutil.SeedTestUsers(storage.DB)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
