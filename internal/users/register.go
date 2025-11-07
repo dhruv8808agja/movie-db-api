@@ -35,9 +35,9 @@ type RegisterResponse struct {
 // @Produce      json
 // @Param        user  body      RegisterRequest   true  "User registration data"
 // @Success      201   {object}  RegisterResponse  "User registered successfully"
-// @Failure      400   {object}  gin.H             "Invalid request or validation error"
-// @Failure      409   {object}  gin.H             "Username or email already exists"
-// @Failure      500   {object}  gin.H             "Internal server error"
+// @Failure      400   {object}  ErrorResponse     "Invalid request or validation error"
+// @Failure      409   {object}  ErrorResponse     "Username or email already exists"
+// @Failure      500   {object}  ErrorResponse     "Internal server error"
 // @Router       /register [post]
 func Register(c *gin.Context) {
 	var req RegisterRequest

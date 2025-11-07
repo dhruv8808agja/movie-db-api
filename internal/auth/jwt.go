@@ -12,14 +12,17 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = getJWTSecret()
+var jwtSecret []byte
 
 func getJWTSecret() []byte {
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		log.Fatal("JWT_SECRET environment variable is not set")
+	if jwtSecret == nil {
+		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			log.Fatal("JWT_SECRET environment variable is not set")
+		}
+		jwtSecret = []byte(secret)
 	}
-	return []byte(secret)
+	return jwtSecret
 }
 
 // GenerateToken creates a JWT for a given username
@@ -30,7 +33,7 @@ func GenerateToken(username string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
+	return token.SignedString(getJWTSecret())
 }
 
 // GenerateTokenWithClaims creates a JWT with user ID, username, and role
@@ -43,7 +46,7 @@ func GenerateTokenWithClaims(userID uint, username string, role models.UserRole)
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
+	return token.SignedString(getJWTSecret())
 }
 
 // JWTMiddleware checks for valid JWT token
@@ -66,7 +69,7 @@ func JWTMiddleware() gin.HandlerFunc {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrTokenMalformed
 			}
-			return jwtSecret, nil
+			return getJWTSecret(), nil
 		})
 
 		if err != nil || !token.Valid {

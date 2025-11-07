@@ -23,8 +23,8 @@ type UpdateProfileRequest struct {
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200  {object}  models.UserProfile  "User profile"
-// @Failure      401  {object}  gin.H               "Unauthorized"
-// @Failure      404  {object}  gin.H               "User not found"
+// @Failure      401  {object}  ErrorResponse       "Unauthorized"
+// @Failure      404  {object}  ErrorResponse       "User not found"
 // @Router       /profile [get]
 func GetProfile(c *gin.Context) {
 	username, exists := c.Get("username")
@@ -49,7 +49,7 @@ func GetProfile(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      int                 true  "User ID"
 // @Success      200  {object}  models.UserProfile  "User profile"
-// @Failure      404  {object}  gin.H               "User not found"
+// @Failure      404  {object}  ErrorResponse       "User not found"
 // @Router       /users/{id} [get]
 func GetProfileByID(c *gin.Context) {
 	id := c.Param("id")
@@ -72,10 +72,10 @@ func GetProfileByID(c *gin.Context) {
 // @Security     BearerAuth
 // @Param        profile  body      UpdateProfileRequest  true  "Profile update data"
 // @Success      200      {object}  models.UserProfile    "Updated profile"
-// @Failure      400      {object}  gin.H                 "Invalid request"
-// @Failure      401      {object}  gin.H                 "Unauthorized"
-// @Failure      404      {object}  gin.H                 "User not found"
-// @Failure      500      {object}  gin.H                 "Internal server error"
+// @Failure      400      {object}  ErrorResponse         "Invalid request"
+// @Failure      401      {object}  ErrorResponse         "Unauthorized"
+// @Failure      404      {object}  ErrorResponse         "User not found"
+// @Failure      500      {object}  ErrorResponse         "Internal server error"
 // @Router       /profile [put]
 func UpdateProfile(c *gin.Context) {
 	username, exists := c.Get("username")
@@ -116,10 +116,10 @@ func UpdateProfile(c *gin.Context) {
 // @Tags         users
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200  {object}  gin.H  "Account deleted successfully"
-// @Failure      401  {object}  gin.H  "Unauthorized"
-// @Failure      404  {object}  gin.H  "User not found"
-// @Failure      500  {object}  gin.H  "Internal server error"
+// @Success      200  {object}  MessageResponse  "Account deleted successfully"
+// @Failure      401  {object}  ErrorResponse    "Unauthorized"
+// @Failure      404  {object}  ErrorResponse    "User not found"
+// @Failure      500  {object}  ErrorResponse    "Internal server error"
 // @Router       /profile [delete]
 func DeleteProfile(c *gin.Context) {
 	username, exists := c.Get("username")

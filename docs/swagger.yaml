@@ -20,6 +20,8 @@ definitions:
       token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
+      user:
+        $ref: '#/definitions/models.UserProfile'
     type: object
   models.Movie:
     properties:
@@ -52,6 +54,127 @@ definitions:
       title:
         example: The Matrix
         type: string
+    type: object
+  models.UploadProgress:
+    properties:
+      percent_complete:
+        example: 49.76
+        type: number
+      session_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      status:
+        example: in_progress
+        type: string
+      total_chunks:
+        example: 205
+        type: integer
+      uploaded_chunks:
+        example: 102
+        type: integer
+    type: object
+  models.UserProfile:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      bio:
+        example: Movie enthusiast and film critic
+        type: string
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      id:
+        example: 1
+        type: integer
+      last_name:
+        example: Doe
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/models.UserRole'
+        example: user
+      username:
+        example: johndoe
+        type: string
+    type: object
+  models.UserRole:
+    enum:
+    - admin
+    - moderator
+    - user
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleModerator
+    - RoleUser
+  models.Video:
+    properties:
+      bitrate:
+        description: bits per second
+        example: 5000000
+        type: integer
+      codec:
+        example: h264
+        type: string
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      duration:
+        description: in seconds
+        example: 136.5
+        type: number
+      file_size:
+        description: in bytes
+        example: 2147483648
+        type: integer
+      filename:
+        example: matrix_1999.mp4
+        type: string
+      format:
+        example: mp4
+        type: string
+      fps:
+        example: 23.976
+        type: number
+      height:
+        example: 1080
+        type: integer
+      id:
+        example: 1
+        type: integer
+      movie_id:
+        description: Foreign key to movies table (nullable for standalone videos)
+        example: 1
+        type: integer
+      original_name:
+        example: The Matrix (1999).mp4
+        type: string
+      storage_path:
+        example: videos/movie-1/original/video-1.mp4
+        type: string
+      thumbnail_url:
+        example: https://cdn.example.com/thumbnails/video-1-thumb.jpg
+        type: string
+      title:
+        example: The Matrix - Full Movie
+        type: string
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      upload_status:
+        description: pending, uploading, processing, completed, failed
+        example: completed
+        type: string
+      width:
+        example: 1920
+        type: integer
     type: object
   movies.DeleteMoviesRequest:
     properties:
@@ -88,6 +211,136 @@ definitions:
       total_pages:
         type: integer
     type: object
+  users.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+  users.ListUsersResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/models.UserProfile'
+        type: array
+    type: object
+  users.MessageResponse:
+    properties:
+      message:
+        example: success message
+        type: string
+    type: object
+  users.RegisterRequest:
+    properties:
+      bio:
+        example: Movie enthusiast
+        maxLength: 500
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      first_name:
+        example: John
+        maxLength: 50
+        type: string
+      last_name:
+        example: Doe
+        maxLength: 50
+        type: string
+      password:
+        example: securepassword123
+        minLength: 8
+        type: string
+      username:
+        example: johndoe
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  users.RegisterResponse:
+    properties:
+      message:
+        example: User registered successfully
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/models.UserProfile'
+    type: object
+  users.UpdateProfileRequest:
+    properties:
+      avatar:
+        example: https://example.com/new-avatar.jpg
+        maxLength: 500
+        type: string
+      bio:
+        example: Updated bio
+        maxLength: 500
+        type: string
+      first_name:
+        example: John
+        maxLength: 50
+        type: string
+      last_name:
+        example: Doe
+        maxLength: 50
+        type: string
+    type: object
+  users.UpdateRoleRequest:
+    properties:
+      role:
+        allOf:
+        - $ref: '#/definitions/models.UserRole'
+        example: moderator
+    required:
+    - role
+    type: object
+  videos.CompleteUploadRequest:
+    properties:
+      session_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - session_id
+    type: object
+  videos.InitiateUploadRequest:
+    properties:
+      file_size:
+        example: 1073741824
+        type: integer
+      filename:
+        example: movie.mp4
+        type: string
+      movie_id:
+        example: 1
+        type: integer
+    required:
+    - file_size
+    - filename
+    type: object
+  videos.InitiateUploadResponse:
+    properties:
+      chunk_size:
+        example: 5242880
+        type: integer
+      session_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      total_chunks:
+        example: 205
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -102,6 +355,167 @@ info:
   title: Movie Database API
   version: "1.0"
 paths:
+  /admin/users:
+    get:
+      description: Retrieve a paginated list of all users (admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            $ref: '#/definitions/users.ListUsersResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "403":
+          description: Forbidden - admin only
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - users
+  /admin/users/{id}/activate:
+    post:
+      description: Activate a user account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User activated successfully
+          schema:
+            $ref: '#/definitions/users.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "403":
+          description: Forbidden - admin only
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Activate user
+      tags:
+      - users
+  /admin/users/{id}/deactivate:
+    post:
+      description: Deactivate a user account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deactivated successfully
+          schema:
+            $ref: '#/definitions/users.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "403":
+          description: Forbidden - admin only
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deactivate user
+      tags:
+      - users
+  /admin/users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      description: Update a user's role (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Role update data
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/users.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user profile
+          schema:
+            $ref: '#/definitions/models.UserProfile'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "403":
+          description: Forbidden - admin only
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user role
+      tags:
+      - users
   /login:
     post:
       consumes:
@@ -411,6 +825,354 @@ paths:
       summary: Create multiple movies
       tags:
       - movies
+  /profile:
+    delete:
+      description: Soft delete the currently authenticated user's account
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account deleted successfully
+          schema:
+            $ref: '#/definitions/users.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete user account
+      tags:
+      - users
+    get:
+      description: Retrieve the profile of the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile
+          schema:
+            $ref: '#/definitions/models.UserProfile'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update the profile of the currently authenticated user
+      parameters:
+      - description: Profile update data
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/users.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated profile
+          schema:
+            $ref: '#/definitions/models.UserProfile'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - users
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with username, email, and password
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/users.RegisterResponse'
+        "400":
+          description: Invalid request or validation error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "409":
+          description: Username or email already exists
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      summary: Register new user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      description: Retrieve any user's public profile by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile
+          schema:
+            $ref: '#/definitions/models.UserProfile'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      summary: Get user profile by ID
+      tags:
+      - users
+  /videos/upload/cancel/{sessionId}:
+    delete:
+      consumes:
+      - application/json
+      description: Cancel an ongoing video upload session and clean up temporary files
+      parameters:
+      - description: Upload session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload cancelled
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Session not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to cancel
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel upload
+      tags:
+      - videos
+  /videos/upload/chunk:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a single chunk of a video file. Chunks must be uploaded
+        sequentially or in parallel.
+      parameters:
+      - description: Upload session ID
+        in: header
+        name: X-Session-ID
+        required: true
+        type: string
+      - description: Chunk index (0-based)
+        in: header
+        name: X-Chunk-Index
+        required: true
+        type: integer
+      - description: Total number of chunks
+        in: header
+        name: X-Total-Chunks
+        required: true
+        type: integer
+      - description: Chunk data
+        in: formData
+        name: chunk
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Chunk uploaded successfully
+          schema:
+            $ref: '#/definitions/models.UploadProgress'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Session not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload video chunk
+      tags:
+      - videos
+  /videos/upload/complete:
+    post:
+      consumes:
+      - application/json
+      description: Merge all uploaded chunks, upload to storage, and create video
+        record
+      parameters:
+      - description: Complete upload request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/videos.CompleteUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload completed successfully
+          schema:
+            $ref: '#/definitions/models.Video'
+        "400":
+          description: Invalid request or incomplete upload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Session not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete video upload
+      tags:
+      - videos
+  /videos/upload/initiate:
+    post:
+      consumes:
+      - application/json
+      description: Start a new chunked video upload session. Returns session ID and
+        chunk information.
+      parameters:
+      - description: Upload initiation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/videos.InitiateUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload session created
+          schema:
+            $ref: '#/definitions/videos.InitiateUploadResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Initiate video upload
+      tags:
+      - videos
+  /videos/upload/status/{sessionId}:
+    get:
+      consumes:
+      - application/json
+      description: Get the current progress and status of a video upload session
+      parameters:
+      - description: Upload session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload progress
+          schema:
+            $ref: '#/definitions/models.UploadProgress'
+        "404":
+          description: Session not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get upload status
+      tags:
+      - videos
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token

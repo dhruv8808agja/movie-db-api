@@ -145,7 +145,7 @@ db-shell: ## Connect to database shell
 ## Swagger
 swagger-gen: ## Generate Swagger documentation
 	@which swag > /dev/null || (echo "Installing swag..." && go install github.com/swaggo/swag/cmd/swag@latest)
-	swag init -g cmd/server/main.go
+	@export PATH=$$PATH:$$(go env GOPATH)/bin && swag init -g cmd/server/main.go
 
 swagger-serve: swagger-gen run ## Generate Swagger docs and run server
 

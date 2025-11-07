@@ -22,6 +22,16 @@ type UpdateRoleRequest struct {
 	Role models.UserRole `json:"role" binding:"required" example:"moderator"`
 }
 
+// ErrorResponse represents an error response
+type ErrorResponse struct {
+	Error string `json:"error" example:"error message"`
+}
+
+// MessageResponse represents a success message response
+type MessageResponse struct {
+	Message string `json:"message" example:"success message"`
+}
+
 // ListUsers retrieves all users (admin only)
 // @Summary      List all users
 // @Description  Retrieve a paginated list of all users (admin only)
@@ -31,9 +41,9 @@ type UpdateRoleRequest struct {
 // @Param        page   query     int  false  "Page number"      default(1)
 // @Param        limit  query     int  false  "Items per page"   default(10)
 // @Success      200    {object}  ListUsersResponse  "List of users"
-// @Failure      401    {object}  gin.H              "Unauthorized"
-// @Failure      403    {object}  gin.H              "Forbidden - admin only"
-// @Failure      500    {object}  gin.H              "Internal server error"
+// @Failure      401    {object}  ErrorResponse      "Unauthorized"
+// @Failure      403    {object}  ErrorResponse      "Forbidden - admin only"
+// @Failure      500    {object}  ErrorResponse      "Internal server error"
 // @Router       /admin/users [get]
 func ListUsers(c *gin.Context) {
 	// Parse pagination parameters
@@ -91,11 +101,11 @@ func ListUsers(c *gin.Context) {
 // @Param        id    path      int                   true  "User ID"
 // @Param        role  body      UpdateRoleRequest     true  "Role update data"
 // @Success      200   {object}  models.UserProfile    "Updated user profile"
-// @Failure      400   {object}  gin.H                 "Invalid request"
-// @Failure      401   {object}  gin.H                 "Unauthorized"
-// @Failure      403   {object}  gin.H                 "Forbidden - admin only"
-// @Failure      404   {object}  gin.H                 "User not found"
-// @Failure      500   {object}  gin.H                 "Internal server error"
+// @Failure      400   {object}  ErrorResponse         "Invalid request"
+// @Failure      401   {object}  ErrorResponse         "Unauthorized"
+// @Failure      403   {object}  ErrorResponse         "Forbidden - admin only"
+// @Failure      404   {object}  ErrorResponse         "User not found"
+// @Failure      500   {object}  ErrorResponse         "Internal server error"
 // @Router       /admin/users/{id}/role [put]
 func UpdateUserRole(c *gin.Context) {
 	id := c.Param("id")
@@ -134,12 +144,12 @@ func UpdateUserRole(c *gin.Context) {
 // @Tags         users
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id  path      int     true  "User ID"
-// @Success      200 {object}  gin.H   "User deactivated successfully"
-// @Failure      401 {object}  gin.H   "Unauthorized"
-// @Failure      403 {object}  gin.H   "Forbidden - admin only"
-// @Failure      404 {object}  gin.H   "User not found"
-// @Failure      500 {object}  gin.H   "Internal server error"
+// @Param        id  path      int               true  "User ID"
+// @Success      200 {object}  MessageResponse   "User deactivated successfully"
+// @Failure      401 {object}  ErrorResponse     "Unauthorized"
+// @Failure      403 {object}  ErrorResponse     "Forbidden - admin only"
+// @Failure      404 {object}  ErrorResponse     "User not found"
+// @Failure      500 {object}  ErrorResponse     "Internal server error"
 // @Router       /admin/users/{id}/deactivate [post]
 func DeactivateUser(c *gin.Context) {
 	id := c.Param("id")
@@ -165,12 +175,12 @@ func DeactivateUser(c *gin.Context) {
 // @Tags         users
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id  path      int     true  "User ID"
-// @Success      200 {object}  gin.H   "User activated successfully"
-// @Failure      401 {object}  gin.H   "Unauthorized"
-// @Failure      403 {object}  gin.H   "Forbidden - admin only"
-// @Failure      404 {object}  gin.H   "User not found"
-// @Failure      500 {object}  gin.H   "Internal server error"
+// @Param        id  path      int               true  "User ID"
+// @Success      200 {object}  MessageResponse   "User activated successfully"
+// @Failure      401 {object}  ErrorResponse     "Unauthorized"
+// @Failure      403 {object}  ErrorResponse     "Forbidden - admin only"
+// @Failure      404 {object}  ErrorResponse     "User not found"
+// @Failure      500 {object}  ErrorResponse     "Internal server error"
 // @Router       /admin/users/{id}/activate [post]
 func ActivateUser(c *gin.Context) {
 	id := c.Param("id")
