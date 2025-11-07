@@ -10,6 +10,7 @@ import (
 )
 
 var DB *gorm.DB
+var User = models.User{}
 var Movie = models.Movie{}
 var Video = models.Video{}
 var UploadSession = models.UploadSession{}
@@ -25,7 +26,7 @@ func InitDB() {
 	}
 
 	// Auto-migrate schema
-	err = DB.AutoMigrate(&Movie, &Video, &UploadSession, &TranscodedVideo, &TranscodingJob)
+	err = DB.AutoMigrate(&User, &Movie, &Video, &UploadSession, &TranscodedVideo, &TranscodingJob)
 	if err != nil {
 		log.Fatal("failed to migrate database: ", err)
 	}

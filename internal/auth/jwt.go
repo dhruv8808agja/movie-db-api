@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dhruv8808agja/movie-db-api/pkg/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -25,6 +26,19 @@ func getJWTSecret() []byte {
 func GenerateToken(username string) (string, error) {
 	claims := jwt.MapClaims{
 		"username": username,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // 1 day expiry
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+
+// GenerateTokenWithClaims creates a JWT with user ID, username, and role
+func GenerateTokenWithClaims(userID uint, username string, role models.UserRole) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id":  userID,
+		"username": username,
+		"role":     role,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(), // 1 day expiry
 	}
 
@@ -63,6 +77,13 @@ func JWTMiddleware() gin.HandlerFunc {
 		// token is valid, save claims in context
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			c.Set("username", claims["username"])
+			// Set user_id and role if present (for enhanced tokens)
+			if userID, ok := claims["user_id"].(float64); ok {
+				c.Set("user_id", uint(userID))
+			}
+			if role, ok := claims["role"].(string); ok {
+				c.Set("user_role", models.UserRole(role))
+			}
 		}
 
 		c.Next()

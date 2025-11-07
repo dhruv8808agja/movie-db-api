@@ -2,7 +2,10 @@ package auth
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/dhruv8808agja/movie-db-api/internal/storage"
+	"github.com/dhruv8808agja/movie-db-api/pkg/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +17,8 @@ type LoginRequest struct {
 
 // LoginResponse represents the JWT token response
 type LoginResponse struct {
-	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	Token string             `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	User  models.UserProfile `json:"user"`
 }
 
 // ErrorResponse represents an error response
@@ -35,27 +39,44 @@ type ErrorResponse struct {
 // @Failure      500          {object}  ErrorResponse  "Failed to generate token"
 // @Router       /login [post]
 func Login(c *gin.Context) {
-	var creds struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+	var creds LoginRequest
 
 	if err := c.BindJSON(&creds); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Hardcoded credentials (replace with DB lookup in real app)
-	if creds.Username != "admin" || creds.Password != "password" {
+	// Normalize username
+	username := strings.TrimSpace(strings.ToLower(creds.Username))
+
+	// Find user by username
+	var user models.User
+	if err := storage.DB.Where("username = ?", username).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
 
-	token, err := GenerateToken(creds.Username)
+	// Check if user is active
+	if !user.IsActive {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "account is inactive"})
+		return
+	}
+
+	// Verify password
+	if !CheckPassword(creds.Password, user.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		return
+	}
+
+	// Generate JWT token with user claims
+	token, err := GenerateTokenWithClaims(user.ID, user.Username, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, LoginResponse{
+		Token: token,
+		User:  user.ToProfile(),
+	})
 }

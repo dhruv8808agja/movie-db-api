@@ -12,6 +12,7 @@ import (
 	"github.com/dhruv8808agja/movie-db-api/internal/monitor"
 	"github.com/dhruv8808agja/movie-db-api/internal/movies"
 	"github.com/dhruv8808agja/movie-db-api/internal/storage"
+	"github.com/dhruv8808agja/movie-db-api/internal/users"
 	"github.com/dhruv8808agja/movie-db-api/internal/videos"
 )
 
@@ -36,6 +37,9 @@ import (
 //
 // @tag.name         auth
 // @tag.description  Authentication endpoints
+//
+// @tag.name         users
+// @tag.description  User management and profile endpoints
 //
 // @tag.name         movies
 // @tag.description  Movie management endpoints
@@ -63,8 +67,12 @@ func main() {
 	// Video player demo
 	r.StaticFile("/player", "./public/player.html")
 
-	// Authentication
+	// Authentication & User Registration
 	r.POST("/login", auth.Login)
+	r.POST("/register", users.Register)
+
+	// Public user profiles
+	r.GET("/users/:id", users.GetProfileByID)
 
 	// Read
 	r.GET("/movies", movies.ListMoviesWithFilter)
@@ -72,6 +80,20 @@ func main() {
 	// Secured routes
 	secured := r.Group("/")
 	secured.Use(auth.JWTMiddleware())
+
+	// User profile routes (authenticated users)
+	secured.GET("/profile", users.GetProfile)
+	secured.PUT("/profile", users.UpdateProfile)
+	secured.DELETE("/profile", users.DeleteProfile)
+
+	// Admin routes (admin only)
+	admin := secured.Group("/admin")
+	admin.Use(middleware.RequireAdmin())
+	admin.GET("/users", users.ListUsers)
+	admin.PUT("/users/:id/role", users.UpdateUserRole)
+	admin.POST("/users/:id/deactivate", users.DeactivateUser)
+	admin.POST("/users/:id/activate", users.ActivateUser)
+
 	// Movie routes
 	// Create
 	secured.POST("/movies", movies.CreateMovie)
