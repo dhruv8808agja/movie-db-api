@@ -1,7 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
@@ -44,6 +47,11 @@ import (
 // @tag.name         movies
 // @tag.description  Movie management endpoints
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
+
 	// Initialize logger
 	logger.InitLogger()
 

@@ -3,8 +3,10 @@ package storage
 import (
 	"log"
 
+	"github.com/dhruv8808agja/movie-db-api/internal/config"
 	"github.com/dhruv8808agja/movie-db-api/pkg/models"
 
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -19,8 +21,25 @@ var TranscodingJob = models.TranscodingJob{}
 
 // InitDB initializes the database connection and performs auto-migration.
 func InitDB() {
+	cfg := config.LoadConfig()
+
 	var err error
-	DB, err = gorm.Open(sqlite.Open("movies.db"), &gorm.Config{})
+	var dialector gorm.Dialector
+
+	switch cfg.Database.Driver {
+	case "postgres":
+		dsn := cfg.Database.GetDSN()
+		log.Printf("Connecting to PostgreSQL database with DSN: %s\n", dsn)
+		dialector = postgres.Open(dsn)
+	case "sqlite":
+		dsn := cfg.Database.GetDSN()
+		log.Printf("Connecting to SQLite database: %s\n", dsn)
+		dialector = sqlite.Open(dsn)
+	default:
+		log.Fatalf("Unsupported database driver: %s", cfg.Database.Driver)
+	}
+
+	DB, err = gorm.Open(dialector, &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect database: ", err)
 	}
@@ -30,5 +49,5 @@ func InitDB() {
 	if err != nil {
 		log.Fatal("failed to migrate database: ", err)
 	}
-	log.Println("Database connection established and migrated")
+	log.Printf("Database connection established (%s) and migrated\n", cfg.Database.Driver)
 }

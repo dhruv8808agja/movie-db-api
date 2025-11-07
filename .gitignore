@@ -4,6 +4,7 @@ movie-db.db
 
 # Compiled binaries
 movie-db-api
+main
 
 # Temporary upload files
 tmp/
