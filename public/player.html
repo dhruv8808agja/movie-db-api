@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Streaming Player - Movie DB API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .video-section {
+            padding: 40px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .video-info h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-item label {
+            display: block;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-item value {
+            display: block;
+            color: #333;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .qualities {
+            margin-top: 20px;
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .controls-section {
+            padding: 0 40px 40px 40px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .thumbnail {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .thumbnail img {
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .video-section {
+                padding: 20px;
+            }
+
+            .controls-section {
+                padding: 0 20px 20px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Video Streaming Player</h1>
+            <p>HLS Adaptive Bitrate Streaming Demo</p>
+        </div>
+
+        <div class="controls-section">
+            <div class="input-group">
+                <label for="videoId">Video ID:</label>
+                <input type="number" id="videoId" value="2" placeholder="Enter video ID">
+            </div>
+            <button class="btn" onclick="loadVideo()">Load Video</button>
+            <div id="status"></div>
+        </div>
+
+        <div class="video-section">
+            <div class="video-container">
+                <video id="video" controls></video>
+            </div>
+
+            <div id="videoInfo" class="video-info" style="display: none;">
+                <h2 id="videoTitle">Video Title</h2>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Duration</label>
+                        <value id="duration">--</value>
+                    </div>
+                    <div class="info-item">
+                        <label>HLS Status</label>
+                        <value id="hlsStatus">--</value>
+                    </div>
+                    <div class="info-item">
+                        <label>Video ID</label>
+                        <value id="displayVideoId">--</value>
+                    </div>
+                </div>
+
+                <div class="qualities">
+                    <strong>Available Qualities:</strong>
+                    <div id="qualitiesList"></div>
+                </div>
+
+                <div class="thumbnail" id="thumbnailSection" style="display: none;">
+                    <strong>Thumbnail:</strong><br>
+                    <img id="thumbnailImg" src="" alt="Video thumbnail">
+                </div>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="value" id="currentQuality">--</div>
+                        <div class="label">Current Quality</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="buffered">0%</div>
+                        <div class="label">Buffered</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="bandwidth">--</div>
+                        <div class="label">Bandwidth</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        let hls = null;
+        let videoInfo = null;
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        async function loadVideo() {
+            const videoId = document.getElementById('videoId').value;
+
+            if (!videoId) {
+                showStatus('Please enter a video ID', 'error');
+                return;
+            }
+
+            showStatus('Loading video information...', 'loading');
+
+            try {
+                // Fetch video info (requires auth - using a simple approach for demo)
+                const response = await fetch(`${API_BASE}/videos/${videoId}/info`, {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjI0OTY3MjYsInVzZXJuYW1lIjoiYWRtaW4ifQ.MQUgWAGSPu4-egXaj3jyBN43u5ag-D8RQdPY9J2xIeU'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load video information');
+                }
+
+                videoInfo = await response.json();
+
+                if (!videoInfo.hls.available) {
+                    showStatus('HLS not available for this video. Please generate HLS first.', 'error');
+                    return;
+                }
+
+                // Display video info
+                document.getElementById('videoTitle').textContent = videoInfo.title;
+                document.getElementById('duration').textContent = formatDuration(videoInfo.duration);
+                document.getElementById('hlsStatus').textContent = videoInfo.hls.available ? '✓ Available' : '✗ Not Available';
+                document.getElementById('displayVideoId').textContent = videoInfo.video_id;
+
+                // Display qualities
+                const qualitiesList = document.getElementById('qualitiesList');
+                qualitiesList.innerHTML = videoInfo.qualities.map(q =>
+                    `<span class="quality-badge">${q.quality} (${q.width}x${q.height}) - ${formatBytes(q.file_size)}</span>`
+                ).join('');
+
+                // Display thumbnail if available
+                if (videoInfo.thumbnail) {
+                    document.getElementById('thumbnailImg').src = videoInfo.thumbnail;
+                    document.getElementById('thumbnailSection').style.display = 'block';
+                }
+
+                document.getElementById('videoInfo').style.display = 'block';
+
+                // Load HLS stream
+                const video = document.getElementById('video');
+                const streamUrl = `${API_BASE}${videoInfo.hls.master_playlist}`;
+
+                if (Hls.isSupported()) {
+                    if (hls) {
+                        hls.destroy();
+                    }
+
+                    hls = new Hls({
+                        debug: false,
+                        enableWorker: true,
+                        lowLatencyMode: false,
+                    });
+
+                    hls.loadSource(streamUrl);
+                    hls.attachMedia(video);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        showStatus('Video loaded successfully! Click play to start.', 'success');
+                        updateStats();
+                    });
+
+                    hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
+                        const level = hls.levels[data.level];
+                        document.getElementById('currentQuality').textContent =
+                            `${level.height}p`;
+                    });
+
+                    hls.on(Hls.Events.ERROR, function(event, data) {
+                        if (data.fatal) {
+                            showStatus(`Playback error: ${data.type}`, 'error');
+                        }
+                    });
+
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Native HLS support (Safari/iOS)
+                    video.src = streamUrl;
+                    showStatus('Video loaded successfully! (Native HLS)', 'success');
+                } else {
+                    showStatus('HLS is not supported in this browser', 'error');
+                }
+
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Error loading video:', error);
+            }
+        }
+
+        function updateStats() {
+            const video = document.getElementById('video');
+
+            setInterval(() => {
+                if (video.buffered.length > 0) {
+                    const buffered = (video.buffered.end(0) / video.duration * 100).toFixed(0);
+                    document.getElementById('buffered').textContent = buffered + '%';
+                }
+
+                if (hls && hls.bandwidthEstimate) {
+                    const bandwidth = (hls.bandwidthEstimate / 1000000).toFixed(2);
+                    document.getElementById('bandwidth').textContent = bandwidth + ' Mbps';
+                }
+            }, 1000);
+        }
+
+        // Auto-load video on page load
+        window.addEventListener('load', () => {
+            loadVideo();
+        });
+    </script>
+</body>
+</html>

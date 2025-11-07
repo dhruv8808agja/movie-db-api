@@ -60,6 +60,9 @@ func main() {
 	// Swagger documentation
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Video player demo
+	r.StaticFile("/player", "./public/player.html")
+
 	// Authentication
 	r.POST("/login", auth.Login)
 
@@ -94,6 +97,16 @@ func main() {
 	secured.POST("/videos/transcode", videos.StartTranscoding)
 	secured.GET("/videos/transcode/job/:jobId", videos.GetTranscodingJobStatus)
 	secured.GET("/videos/:videoId/transcoded", videos.ListTranscodedVideos)
+
+	// Video streaming routes
+	secured.POST("/videos/hls/generate", videos.GenerateHLS)
+	secured.GET("/videos/:videoId/info", videos.GetVideoStreamInfo)
+	secured.GET("/videos/:videoId/download/:quality", videos.DownloadQualityVideo)
+
+	// Public streaming routes (no auth required for playback)
+	r.GET("/videos/:videoId/stream/master.m3u8", videos.StreamMasterPlaylist)
+	r.GET("/videos/:videoId/stream/:quality/playlist.m3u8", videos.StreamQualityPlaylist)
+	r.GET("/videos/:videoId/stream/:quality/:segment", videos.StreamSegment)
 
 	// Prometheus metrics
 	monitor.RegisterMetrics(r)
