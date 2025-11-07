@@ -1,6 +1,10 @@
 movies.db
 movie-db.db
 .env
+.env.local
+.env.*.local
+.env.production
+.env.staging
 
 # Compiled binaries
 movie-db-api
@@ -8,3 +12,17 @@ main
 
 # Temporary upload files
 tmp/
+
+# Test coverage
+coverage.out
+coverage.html
+
+# Backups
+*.sql
+*.dump
+backups/
+
+# Docker volumes
+postgres-data/
+redis-data/
+minio-data/

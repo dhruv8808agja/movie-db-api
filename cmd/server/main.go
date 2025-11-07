@@ -69,6 +69,14 @@ func main() {
 	r.Use(middleware.RateLimiter(rateLimitConfig))
 
 	// Public routes
+	// Health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+			"service": "movie-db-api",
+		})
+	})
+
 	// Swagger documentation
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

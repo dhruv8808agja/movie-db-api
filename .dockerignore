@@ -1,0 +1,59 @@
+# Git
+.git
+.gitignore
+.github
+
+# Development files
+.env
+.env.*
+*.db
+*.db-shm
+*.db-wal
+
+# Build artifacts
+movie-db-api
+main
+*.exe
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Documentation
+*.md
+!README.md
+docs/
+LICENSE
+
+# Test files
+*_test.go
+test/
+coverage.out
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backups
+backups/
+*.sql
+*.dump
