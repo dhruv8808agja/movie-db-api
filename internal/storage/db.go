@@ -18,6 +18,9 @@ var Video = models.Video{}
 var UploadSession = models.UploadSession{}
 var TranscodedVideo = models.TranscodedVideo{}
 var TranscodingJob = models.TranscodingJob{}
+var UserInteraction = models.UserInteraction{}
+var UserMovieRating = models.UserMovieRating{}
+var UserPreferences = models.UserPreferences{}
 
 // InitDB initializes the database connection and performs auto-migration.
 func InitDB() {
@@ -45,7 +48,17 @@ func InitDB() {
 	}
 
 	// Auto-migrate schema
-	err = DB.AutoMigrate(&User, &Movie, &Video, &UploadSession, &TranscodedVideo, &TranscodingJob)
+	err = DB.AutoMigrate(
+		&User,
+		&Movie,
+		&Video,
+		&UploadSession,
+		&TranscodedVideo,
+		&TranscodingJob,
+		&UserInteraction,
+		&UserMovieRating,
+		&UserPreferences,
+	)
 	if err != nil {
 		log.Fatal("failed to migrate database: ", err)
 	}

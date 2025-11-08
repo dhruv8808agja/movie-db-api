@@ -14,6 +14,7 @@ import (
 	"github.com/dhruv8808agja/movie-db-api/internal/middleware"
 	"github.com/dhruv8808agja/movie-db-api/internal/monitor"
 	"github.com/dhruv8808agja/movie-db-api/internal/movies"
+	"github.com/dhruv8808agja/movie-db-api/internal/recommendations"
 	"github.com/dhruv8808agja/movie-db-api/internal/storage"
 	"github.com/dhruv8808agja/movie-db-api/internal/users"
 	"github.com/dhruv8808agja/movie-db-api/internal/videos"
@@ -145,6 +146,15 @@ func main() {
 	r.GET("/videos/:videoId/stream/master.m3u8", videos.StreamMasterPlaylist)
 	r.GET("/videos/:videoId/stream/:quality/playlist.m3u8", videos.StreamQualityPlaylist)
 	r.GET("/videos/:videoId/stream/:quality/:segment", videos.StreamSegment)
+
+	// Recommendation routes (authenticated)
+	secured.GET("/recommendations", recommendations.GetRecommendationsForUser)
+	secured.POST("/movies/:id/rate", recommendations.RateMovie)
+	secured.GET("/ratings", recommendations.GetUserRatings)
+	secured.POST("/interactions", recommendations.TrackInteraction)
+
+	// Public recommendation routes
+	r.GET("/movies/:id/similar", recommendations.GetSimilarMovies)
 
 	// Prometheus metrics
 	monitor.RegisterMetrics(r)

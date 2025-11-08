@@ -8,6 +8,7 @@ movie-db.db
 
 # Compiled binaries
 movie-db-api
+movie-api
 main
 
 # Temporary upload files
