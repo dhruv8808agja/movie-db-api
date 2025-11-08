@@ -267,6 +267,72 @@
                 }
             }
         },
+        "/interactions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Track when a user views or watches a movie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recommendations"
+                ],
+                "summary": "Track user interaction",
+                "parameters": [
+                    {
+                        "description": "Interaction details",
+                        "name": "interaction",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/recommendations.TrackInteractionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserInteraction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Authenticate with username and password to receive a JWT token",
@@ -743,6 +809,156 @@
                 }
             }
         },
+        "/movies/{movieId}/rate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Submit or update a rating for a movie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recommendations"
+                ],
+                "summary": "Rate a movie",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Movie ID",
+                        "name": "movieId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Rating information",
+                        "name": "rating",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/recommendations.RateMovieRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserMovieRating"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/movies/{movieId}/similar": {
+            "get": {
+                "description": "Get movies similar to a specific movie based on genre and director",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recommendations"
+                ],
+                "summary": "Get similar movies",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Movie ID",
+                        "name": "movieId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of similar movies (default 10)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.MovieRecommendation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "security": [
@@ -877,6 +1093,112 @@
                         "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/users.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ratings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all movies rated by the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recommendations"
+                ],
+                "summary": "Get user's ratings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/recommendations.UserRatingResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/recommendations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get movie recommendations based on user's watch history and ratings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recommendations"
+                ],
+                "summary": "Get personalized recommendations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of recommendations (default 10)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.MovieRecommendation"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1280,6 +1602,398 @@
                     }
                 }
             }
+        },
+        "/watch-history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get watch history for the authenticated user with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watch-history"
+                ],
+                "summary": "Get watch history",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 20, max: 100)",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by movie ID",
+                        "name": "movie_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by completion status",
+                        "name": "completed",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Watch history retrieved successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Record or update watch history for a movie. Authenticated users only.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watch-history"
+                ],
+                "summary": "Record watch history",
+                "parameters": [
+                    {
+                        "description": "Watch history data",
+                        "name": "watch",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/watchhistory.RecordWatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Watch history recorded successfully",
+                        "schema": {
+                            "$ref": "#/definitions/watchhistory.RecordWatchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Movie not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/watch-history/clear": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete all watch history entries for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watch-history"
+                ],
+                "summary": "Clear all watch history",
+                "responses": {
+                    "200": {
+                        "description": "Watch history cleared successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/watch-history/continue-watching": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get list of movies that the user is currently watching (not completed)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watch-history"
+                ],
+                "summary": "Get continue watching",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit number of results (default: 10, max: 50)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Continue watching list retrieved successfully",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ContinueWatching"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/watch-history/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get aggregated watch statistics for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watch-history"
+                ],
+                "summary": "Get watch statistics",
+                "responses": {
+                    "200": {
+                        "description": "Watch statistics retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.WatchStats"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/watch-history/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a specific watch history entry by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watch-history"
+                ],
+                "summary": "Delete watch history entry",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Watch History ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Watch history deleted successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - not your watch history",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Watch history not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1314,6 +2028,34 @@
                 },
                 "user": {
                     "$ref": "#/definitions/models.UserProfile"
+                }
+            }
+        },
+        "models.ContinueWatching": {
+            "type": "object",
+            "properties": {
+                "last_position": {
+                    "type": "integer",
+                    "example": 2700
+                },
+                "movie": {
+                    "$ref": "#/definitions/models.Movie"
+                },
+                "movie_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "progress": {
+                    "type": "number",
+                    "example": 75.5
+                },
+                "watch_history_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "watched_at": {
+                    "type": "string",
+                    "example": "2024-01-01T12:00:00Z"
                 }
             }
         },
@@ -1359,6 +2101,24 @@
                 }
             }
         },
+        "models.MovieRecommendation": {
+            "type": "object",
+            "properties": {
+                "movie": {
+                    "$ref": "#/definitions/models.Movie"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "reason_type": {
+                    "description": "collaborative, content-based, trending",
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
+                }
+            }
+        },
         "models.UploadProgress": {
             "type": "object",
             "properties": {
@@ -1381,6 +2141,57 @@
                 "uploaded_chunks": {
                     "type": "integer",
                     "example": 102
+                }
+            }
+        },
+        "models.UserInteraction": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "interaction_type": {
+                    "description": "view, like, watch, rate",
+                    "type": "string"
+                },
+                "movie_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "description": "Optional rating (1-10)",
+                    "type": "number"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "watch_duration": {
+                    "description": "In seconds",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.UserMovieRating": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "movie_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "number",
+                    "maximum": 10,
+                    "minimum": 0
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1524,6 +2335,101 @@
                 }
             }
         },
+        "models.WatchHistory": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "device_type": {
+                    "description": "web, mobile, tv, etc.",
+                    "type": "string",
+                    "example": "web"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "last_position": {
+                    "description": "Last playback position in seconds",
+                    "type": "integer",
+                    "example": 2700
+                },
+                "movie_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "progress": {
+                    "description": "Percentage (0-100)",
+                    "type": "number",
+                    "example": 75.5
+                },
+                "quality": {
+                    "description": "Video quality watched",
+                    "type": "string",
+                    "example": "1080p"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "watch_count": {
+                    "description": "Number of times watched",
+                    "type": "integer",
+                    "example": 1
+                },
+                "watch_duration": {
+                    "description": "In seconds",
+                    "type": "integer",
+                    "example": 3600
+                },
+                "watched_at": {
+                    "type": "string",
+                    "example": "2024-01-01T12:00:00Z"
+                }
+            }
+        },
+        "models.WatchStats": {
+            "type": "object",
+            "properties": {
+                "average_progress": {
+                    "type": "number",
+                    "example": 82.5
+                },
+                "completed_movies": {
+                    "type": "integer",
+                    "example": 35
+                },
+                "favorite_genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "Action",
+                        "Drama"
+                    ]
+                },
+                "in_progress_movies": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "last_watched_at": {
+                    "type": "string",
+                    "example": "2024-01-01T12:00:00Z"
+                },
+                "total_movies_watched": {
+                    "type": "integer",
+                    "example": 42
+                },
+                "total_watch_time": {
+                    "description": "Total seconds",
+                    "type": "integer",
+                    "example": 151200
+                }
+            }
+        },
         "movies.DeleteMoviesRequest": {
             "type": "object",
             "properties": {
@@ -1575,6 +2481,53 @@
                 "total_pages": {
                     "type": "integer"
                 }
+            }
+        },
+        "recommendations.RateMovieRequest": {
+            "type": "object",
+            "required": [
+                "rating"
+            ],
+            "properties": {
+                "rating": {
+                    "type": "number",
+                    "maximum": 10,
+                    "minimum": 0,
+                    "example": 8.5
+                }
+            }
+        },
+        "recommendations.TrackInteractionRequest": {
+            "type": "object",
+            "required": [
+                "interaction_type",
+                "movie_id"
+            ],
+            "properties": {
+                "interaction_type": {
+                    "type": "string",
+                    "example": "view"
+                },
+                "movie_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "watch_duration": {
+                    "type": "integer",
+                    "example": 3600
+                }
+            }
+        },
+        "recommendations.UserRatingResponse": {
+            "type": "object",
+            "properties": {
+                "movie": {
+                    "$ref": "#/definitions/models.Movie"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "updated_at": {}
             }
         },
         "users.ErrorResponse": {
@@ -1759,6 +2712,61 @@
                 "total_chunks": {
                     "type": "integer",
                     "example": 205
+                }
+            }
+        },
+        "watchhistory.RecordWatchRequest": {
+            "type": "object",
+            "required": [
+                "last_position",
+                "movie_id",
+                "progress",
+                "watch_duration"
+            ],
+            "properties": {
+                "completed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "device_type": {
+                    "type": "string",
+                    "example": "web"
+                },
+                "last_position": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 2700
+                },
+                "movie_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "progress": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 75.5
+                },
+                "quality": {
+                    "type": "string",
+                    "example": "1080p"
+                },
+                "watch_duration": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 3600
+                }
+            }
+        },
+        "watchhistory.RecordWatchResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Watch history recorded successfully"
+                },
+                "watch_history": {
+                    "$ref": "#/definitions/models.WatchHistory"
                 }
             }
         }

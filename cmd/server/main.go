@@ -18,6 +18,7 @@ import (
 	"github.com/dhruv8808agja/movie-db-api/internal/storage"
 	"github.com/dhruv8808agja/movie-db-api/internal/users"
 	"github.com/dhruv8808agja/movie-db-api/internal/videos"
+	"github.com/dhruv8808agja/movie-db-api/internal/watchhistory"
 )
 
 // @title           Movie Database API
@@ -47,6 +48,9 @@ import (
 //
 // @tag.name         movies
 // @tag.description  Movie management endpoints
+//
+// @tag.name         watch-history
+// @tag.description  Watch history tracking and continue watching endpoints
 func main() {
 	// Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
@@ -155,6 +159,14 @@ func main() {
 
 	// Public recommendation routes
 	r.GET("/movies/:id/similar", recommendations.GetSimilarMovies)
+
+	// Watch history routes (authenticated)
+	secured.POST("/watch-history", watchhistory.RecordWatch)
+	secured.GET("/watch-history", watchhistory.GetWatchHistory)
+	secured.GET("/watch-history/continue-watching", watchhistory.GetContinueWatching)
+	secured.GET("/watch-history/stats", watchhistory.GetWatchStats)
+	secured.DELETE("/watch-history/:id", watchhistory.DeleteWatchHistory)
+	secured.DELETE("/watch-history/clear", watchhistory.ClearWatchHistory)
 
 	// Prometheus metrics
 	monitor.RegisterMetrics(r)

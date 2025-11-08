@@ -21,6 +21,7 @@ var TranscodingJob = models.TranscodingJob{}
 var UserInteraction = models.UserInteraction{}
 var UserMovieRating = models.UserMovieRating{}
 var UserPreferences = models.UserPreferences{}
+var WatchHistory = models.WatchHistory{}
 
 // InitDB initializes the database connection and performs auto-migration.
 func InitDB() {
@@ -58,6 +59,7 @@ func InitDB() {
 		&UserInteraction,
 		&UserMovieRating,
 		&UserPreferences,
+		&WatchHistory,
 	)
 	if err != nil {
 		log.Fatal("failed to migrate database: ", err)

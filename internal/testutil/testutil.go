@@ -33,6 +33,7 @@ func SetupTestDB() *gorm.DB {
 		&models.UserInteraction{},
 		&models.UserMovieRating{},
 		&models.UserPreferences{},
+		&models.WatchHistory{},
 	); err != nil {
 		log.Fatal("failed to migrate test database:", err)
 	}
@@ -149,5 +150,55 @@ func SeedTestUsers(db *gorm.DB) {
 
 	for _, user := range users {
 		db.Create(user)
+	}
+}
+
+// SeedTestMovies seeds the database with default test movies
+func SeedTestMovies(db *gorm.DB) {
+	movies := []models.Movie{
+		{
+			Title:       "The Matrix",
+			Description: "A computer hacker learns about the true nature of reality",
+			Director:    "The Wachowskis",
+			ReleaseDate: time.Date(1999, 3, 31, 0, 0, 0, 0, time.UTC),
+			Genres:      models.Genres{"Action", "Sci-Fi"},
+			Rating:      8.7,
+		},
+		{
+			Title:       "Inception",
+			Description: "A thief who steals corporate secrets through dream-sharing technology",
+			Director:    "Christopher Nolan",
+			ReleaseDate: time.Date(2010, 7, 16, 0, 0, 0, 0, time.UTC),
+			Genres:      models.Genres{"Action", "Sci-Fi", "Thriller"},
+			Rating:      8.8,
+		},
+		{
+			Title:       "The Shawshank Redemption",
+			Description: "Two imprisoned men bond over a number of years",
+			Director:    "Frank Darabont",
+			ReleaseDate: time.Date(1994, 9, 23, 0, 0, 0, 0, time.UTC),
+			Genres:      models.Genres{"Drama"},
+			Rating:      9.3,
+		},
+		{
+			Title:       "Pulp Fiction",
+			Description: "The lives of two mob hitmen, a boxer, and a pair of diner bandits intertwine",
+			Director:    "Quentin Tarantino",
+			ReleaseDate: time.Date(1994, 10, 14, 0, 0, 0, 0, time.UTC),
+			Genres:      models.Genres{"Crime", "Drama"},
+			Rating:      8.9,
+		},
+		{
+			Title:       "The Dark Knight",
+			Description: "Batman faces the Joker, a criminal mastermind",
+			Director:    "Christopher Nolan",
+			ReleaseDate: time.Date(2008, 7, 18, 0, 0, 0, 0, time.UTC),
+			Genres:      models.Genres{"Action", "Crime", "Drama"},
+			Rating:      9.0,
+		},
+	}
+
+	for _, movie := range movies {
+		db.Create(&movie)
 	}
 }
